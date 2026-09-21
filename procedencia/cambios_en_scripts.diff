@@ -1,0 +1,165 @@
+--- Replica_COFECE/Codigo/congelar_resultados.py (c956eeb)
++++ aradillas-replica/codigo/congelar_resultados.py
+@@ -8,13 +8,14 @@
+ diagnóstico (`n_obs` × `n_ctrl` por regresión de markups; lección del 17-sep).
+ 
+ Uso, desde cualquier directorio:
+-    /usr/bin/python3 Replica_COFECE/Codigo/congelar_resultados.py            # todas
+-    /usr/bin/python3 Replica_COFECE/Codigo/congelar_resultados.py replica_2014 comparable_2022
+-    /usr/bin/python3 Replica_COFECE/Codigo/congelar_resultados.py --solo-md   # solo tablas
++    /usr/bin/python3 codigo/congelar_resultados.py            # todas
++    /usr/bin/python3 codigo/congelar_resultados.py replica_2014 comparable_2022
++    /usr/bin/python3 codigo/congelar_resultados.py --solo-md   # solo tablas
+ 
+ (`/usr/bin/python3` porque el `python3` de Homebrew no trae numpy.)
+ 
+-Escribe `Replica_COFECE/Resultados/resultados_congelados.json` (las
++Escribe `resultados/resultados_congelados.json` (o la carpeta de la variable de entorno
++ARADILLAS_SALIDA; el notebook 06 la usa para no pisar la referencia) (las
+ configuraciones que se corren se reemplazan; las demás se conservan) y
+ regenera `Resultados/RESULTADOS.md` con las tablas legibles.
+ """
+@@ -31,7 +32,8 @@
+ 
+ CODIGO = os.path.dirname(os.path.abspath(__file__))
+ REPO = os.path.dirname(CODIGO)
+-SALIDA = os.path.join(REPO, 'Resultados')
++SALIDA = os.path.abspath(os.environ.get('ARADILLAS_SALIDA') or os.path.join(REPO, 'resultados'))
++DATOS = os.path.join(REPO, 'datos')
+ sys.path.insert(0, CODIGO)
+ 
+ import costos_saic                                    # noqa: E402
+@@ -132,20 +134,20 @@
+         except Exception:
+             return None
+     return {'commit': g('rev-parse', '--short', 'HEAD'), 'rama': g('branch', '--show-current'),
+-            'cambios_sin_commit': bool(g('status', '--porcelain', '--', 'Codigo'))}
++            'cambios_sin_commit': bool(g('status', '--porcelain', '--', 'codigo'))}
+ 
+ 
+ def _cargar(cfg):
+     if cfg['anio'] == 2014:
+         import datos_2014
+-        return datos_2014.cargar(os.path.join(REPO, 'Data_2014/'), verbose=False,
++        return datos_2014.cargar(os.path.join(DATOS, 'Data_2014/'), verbose=False,
+                                  pan_de_caja=cfg['pan_de_caja'])
+     import datos_2022
+     original = list(datos_2022.CATEGORIAS)
+     if not cfg['pan_de_caja']:
+         datos_2022.CATEGORIAS[:] = [c for c in original if c[0] != 'Pan de caja']
+     try:
+-        return datos_2022.cargar(os.path.join(REPO, 'Data_2022/'), verbose=False)
++        return datos_2022.cargar(os.path.join(DATOS, 'Data_2022/'), verbose=False)
+     finally:
+         datos_2022.CATEGORIAS[:] = original
+ 
+@@ -323,7 +325,7 @@
+         out['cuadro4'] = {'mae': _f(np.mean(difs)),
+                           'dentro_015': int(sum(x < 0.15 for x in difs)),
+                           'dentro_030': int(sum(x < 0.30 for x in difs)), 'n': len(difs)}
+-        est = np.loadtxt(os.path.join(REPO, 'Data_2014/precios_promedio_46_ciudades_junio_2011.asc'))[:, 0]
++        est = np.loadtxt(os.path.join(DATOS, 'Data_2014/precios_promedio_46_ciudades_junio_2011.asc'))[:, 0]
+         alim = [nombres.index(n) for n in nombres if n not in NO_ALIMENTOS]
+         reg = {}
+         for r, ents in REGIONES.items():
+@@ -338,7 +340,7 @@
+     costos = {}
+     if cfg['costos']:
+         anio_c = 2013 if cfg['anio'] == 2014 else 2023
+-        cache = os.path.join(REPO, f"Data_{cfg['anio']}/costos_saic_{anio_c}.csv")
++        cache = os.path.join(DATOS, f"Data_{cfg['anio']}/costos_saic_{anio_c}.csv")
+         for m in ('rama', 'sector'):
+             base = costos_saic.cargar(anio_c, d.claves_ciudad, nombres_ext, cache=cache,
+                                       modo=m, verbose=False)
+@@ -386,12 +388,12 @@
+ 
+ def markdown(todo):
+     L = ['# Resultados congelados', '',
+-         'Generado por `Codigo/congelar_resultados.py`. **No editar a mano**: toda cifra que se',
++         'Generado por `codigo/congelar_resultados.py`. **No editar a mano**: toda cifra que se',
+          'cite en P2 o en el reporte debe salir de aquí (o de `resultados_congelados.json`).', '',
+          f"* generado: {todo['_meta']['fecha']}",
+          f"* código: commit `{todo['_meta']['git']['commit']}` "
+          f"(rama `{todo['_meta']['git']['rama']}`"
+-         f"{', con cambios sin commit en Codigo/' if todo['_meta']['git']['cambios_sin_commit'] else ''})",
++         f"{', con cambios sin commit en codigo/' if todo['_meta']['git']['cambios_sin_commit'] else ''})",
+          f"* entorno: {todo['_meta']['entorno']}", '',
+          '`*` = significativo (β > 0 y t ≥ 2.326, V1). `n×k` = ciudades × controles que '
+          'entraron a la regresión de markups.', '']
+--- Replica_COFECE/Codigo/diagnostico_ve_cero.py (c956eeb)
++++ aradillas-replica/codigo/diagnostico_ve_cero.py
+@@ -5,7 +5,7 @@
+ afecta: qué hogares pasan de una VE positiva a cero, en qué ciudades y si compran o no
+ transporte. Corre en ~40 s.
+ 
+-Uso: /usr/bin/python3 Replica_COFECE/Codigo/diagnostico_ve_cero.py
++Uso: /usr/bin/python3 codigo/diagnostico_ve_cero.py   (o el notebook 05)
+ """
+ import os
+ import sys
+@@ -19,7 +19,7 @@
+                             demandas_marshallianas, elasticidades, estimar_markups,
+                             variacion_equivalente, sectores_significativos)
+ 
+-d = datos_2014.cargar(os.path.join(os.path.dirname(CODIGO), 'Data_2014/'), verbose=False)
++d = datos_2014.cargar(os.path.join(os.path.dirname(CODIGO), 'datos', 'Data_2014/'), verbose=False)
+ r = estimar_easi(d.precios_ln, d.w, d.gasto_total, d.Z, n_cat=d.n_cat,
+                  aplicar_trim=False, verbose=False)
+ m = ModeloEASI(**reconstruir_matrices(r['beta'], n_cat=d.n_cat))
+--- Replica_COFECE/Codigo/run_nb.py (c956eeb)
++++ aradillas-replica/codigo/run_nb.py
+@@ -1,17 +1,18 @@
+ """Ejecuta un notebook del proyecto en sitio, sin abrir Jupyter.
+ 
+ Uso (desde cualquier directorio):
+-    python3 Replica_COFECE/Codigo/run_nb.py aradillas_2022.ipynb
+-    python3 Replica_COFECE/Codigo/run_nb.py comparacion_2014_2022.ipynb
++    python3 codigo/run_nb.py 02_actualizacion_2022.ipynb
++    python3 codigo/run_nb.py 03_comparacion_2014_2022.ipynb
+ 
+ Resuelve las dos trampas del entorno local (CLAUDE.md §9):
+-* los notebooks usan rutas relativas 'Replica_COFECE/...', así que el kernel
+-  corre con cwd = directorio padre de Replica_COFECE;
++* los notebooks usan rutas relativas a la raíz del repo, así que el kernel
++  corre con cwd = raíz del repo (cada notebook además lo resuelve solo);
+ * el kernelspec `python3` del sistema puede invocar un `python` inexistente, así
+   que se registra un kernelspec temporal con ESTE intérprete (el que tiene
+   numpy/pandas). No toca los kernels instalados.
+ 
+-Guarda las salidas en el mismo archivo y conserva la metadata de kernel original.
++Guarda el notebook ejecutado en notebooks/ejecutados/ (ignorado por git) y deja el original
++limpio, sin salidas.
+ Requiere nbclient, nbformat e ipykernel.
+ """
+ import json
+@@ -24,7 +25,9 @@
+ from nbclient import NotebookClient
+ 
+ CODIGO = os.path.dirname(os.path.abspath(__file__))
+-PADRE = os.path.dirname(os.path.dirname(CODIGO))     # directorio que contiene Replica_COFECE
++PADRE = os.path.dirname(CODIGO)                      # raíz del repo
++NOTEBOOKS = os.path.join(PADRE, 'notebooks')
++EJECUTADOS = os.path.join(NOTEBOOKS, 'ejecutados')
+ KERNEL = 'aradillas-run-nb'
+ 
+ 
+@@ -42,7 +45,9 @@
+ 
+ 
+ def ejecutar(nombre):
+-    ruta = os.path.join(CODIGO, nombre)
++    ruta = os.path.join(NOTEBOOKS, nombre)
++    destino = os.path.join(EJECUTADOS, nombre)
++    os.makedirs(EJECUTADOS, exist_ok=True)
+     nb = nbformat.read(ruta, as_version=4)
+     kernelspec_original = nb.metadata.get('kernelspec')
+     t0 = time.time()
+@@ -53,7 +58,7 @@
+     finally:
+         if kernelspec_original is not None:
+             nb.metadata['kernelspec'] = kernelspec_original
+-        nbformat.write(nb, ruta)
++        nbformat.write(nb, destino)
+ 
+     codigo = [c for c in nb.cells if c.cell_type == 'code']
+     errores = sum(any(o.get('output_type') == 'error' for o in c.get('outputs', []))

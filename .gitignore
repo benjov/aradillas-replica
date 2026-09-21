@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+.ipynb_checkpoints/
+.env
+.venv/
+
+# Salidas locales de ejecución (no son la referencia)
+notebooks/ejecutados/
+resultados/nueva_corrida/
+
+# ENIGH 2022 y demás archivos de INEGI de 2022: fuera del repo (ver datos/MANIFIESTO_datos.csv).
+# Solo se versionan el caché de costos (pequeño y derivado) y el LEEME.
+datos/Data_2022/*
+!datos/Data_2022/costos_saic_2023.csv
+!datos/Data_2022/LEEME.md

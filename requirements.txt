@@ -1,0 +1,9 @@
+# Versiones con las que se generó el congelado (Python 3.9.6, macOS): resultados/resultados_congelados.json
+numpy==1.26.4
+pandas==2.2.3
+scipy==1.13.1
+# Para ejecutar los notebooks
+jupyter
+nbformat
+nbclient
+ipykernel
