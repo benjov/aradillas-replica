@@ -1,15 +1,43 @@
+# --- Basura de sistema operativo y editor ---
 .DS_Store
-__pycache__/
-.ipynb_checkpoints/
-.env
-.venv/
+._*
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*~
 
-# Salidas locales de ejecución (no son la referencia)
+# --- Entornos y cachés de Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+*.egg-info/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# --- Secretos y credenciales: nunca deben viajar en este repo ---
+.env
+.env.*
+*.pem
+*.key
+*credencial*
+*credential*
+.netrc
+
+# --- Salidas locales de ejecución (no son la referencia) ---
 notebooks/ejecutados/
 resultados/nueva_corrida/
+*.log
 
 # ENIGH 2022 y demás archivos de INEGI de 2022: fuera del repo (ver datos/MANIFIESTO_datos.csv).
 # Solo se versionan el caché de costos (pequeño y derivado) y el LEEME.
+# El patrón cubre la carpeta completa pase lo que pase (copia o symlink, cualquier nombre de archivo),
+# así que un archivo nuevo de INEGI que se agregue ahí no puede colarse por accidente.
 datos/Data_2022/*
 !datos/Data_2022/costos_saic_2023.csv
 !datos/Data_2022/LEEME.md

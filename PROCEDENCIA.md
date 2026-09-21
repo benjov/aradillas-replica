@@ -47,12 +47,29 @@ histórica, `CD/*.asc` (duplican `Data_2014`), el PDF del paper y los microdatos
 * La carga de 2022 con solo los archivos del manifiesto da 57,552 hogares y 13 categorías, igual que el
   congelado.
 
-## Qué NO se ha verificado todavía
+## Verificación de 2022 en la máquina de los autores (21 de septiembre de 2026)
 
-* Las tres configuraciones de 2022 (`comparable_2022`, `comparable_2022_12cat`, `trim_2022`) y los
-  notebooks 02 y 03: requieren unos 15 minutos y más memoria de la disponible en el entorno donde se armó
-  el repositorio. Falta correr `06_congelar_resultados` completo en el entorno del congelado (Mac, Python
-  3.9.6) y confirmar 0 diferencias.
+Entorno: macOS, procesador x86_64, Anaconda (`PythonData`), **Python 3.10.14, numpy 1.25.2, pandas 2.1.1,
+scipy 1.9.3**. No es el entorno canónico del congelado (Python 3.9.6, numpy 1.26.4, pandas 2.2.3, scipy 1.13.1),
+y el cuaderno 00 lo avisa.
+
+* `06_congelar_resultados` con `comparable_2022`, `comparable_2022_12cat` y `trim_2022`, `TOLERANCIA = 0.0`:
+  **0 diferencias en 1,441 valores** (diferencia absoluta máxima 0) contra `resultados/resultados_congelados.json`.
+  Tiempo: 21.7 min (472 s, 363 s y 470 s).
+* Cuadernos 00 a 05 ejecutados sin errores. En 01, 02 y 03 la celda de cotejo dice "Todo coincide con el
+  congelado". El 04 reproduce la tabla de precios del Anexo B del informe y el 05 los porcentajes de §5.1.
+* Notas de la corrida: `RuntimeWarning` de numpy sobre grados de libertad (`comparable_2022`, control `rama`) y de
+  división en `regresividad` (`trim_2022`, control `ciudad`, donde la VE es 0.0 %). Ambos ya estaban en el congelado
+  y no cambian ninguna cifra.
+* `resultados/nueva_corrida/` (ignorada por git) trae `_meta.git.commit = null`; no es la referencia.
+
+## Qué queda sin verificar
+
+* La corrida completa (siete configuraciones) con el intérprete canónico (`/usr/bin/python3`, 3.9.6) usando este
+  repositorio. El congelado se generó con él en el repositorio de trabajo; este repositorio se ha corrido en
+  Linux (2014) y en Anaconda (2022), no en ese intérprete.
+* Las cuatro configuraciones de 2014 con `06_congelar_resultados` en la máquina de los autores (allí solo se
+  ejecutó el cuaderno 01, cuyo cotejo es a la precisión impresa).
 
 ## Autoría
 
